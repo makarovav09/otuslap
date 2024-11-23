@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: True
+  become_user: root
+  tasks:
+    - name: Only run "update_cache=yes" if the last one is more than 3600 seconds ago
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+    - name: Upgrade the OS (apt-get dist-upgrade)
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
