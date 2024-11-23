@@ -1,0 +1,30 @@
+---
+- hosts: all
+  become: True
+  become_user: root
+  tasks:
+    - name: Make dir for key
+      ansible.builtin.shell:
+        cmd: mkdir -p /etc/apt/keyrings/
+    - name: Add key for repository
+      ansible.builtin.get_url:
+        url: https://pkgs.zabbly.com/key.asc
+        dest: /etc/apt/keyrings/zabbly.asc
+    - name: Add repositoria
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/zabbly-kernel-stable.sources
+        content: |
+            Enabled: yes
+            Types: deb
+            URIs: https://pkgs.zabbly.com/kernel/stable
+            Suites: {{ansible_distribution_release}}
+            Components: main
+            Architectures: amd64
+            Signed-By: /etc/apt/keyrings/zabbly.asc
+    - name: Install new kernal
+      ansible.builtin.apt:
+        update_cache: yes
+        pkg: linux-zabbly
+    - name: Reboot machine and send a message
+      ansible.builtin.reboot:
+        msg: "Rebooting machine in 5 seconds"
